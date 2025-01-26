@@ -76,6 +76,9 @@ public class MicPitch : MonoBehaviour
     private float latestAmplitude = 0f;
     private float silenceTimer = 0f; // Timer to track silence
 
+    [Header("Resizing Control")]
+    public bool allowResizing = false;
+
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
@@ -90,6 +93,7 @@ public class MicPitch : MonoBehaviour
         audioSource.clip = Microphone.Start(Microphone.devices[0], true, 10, 44100);
         while (Microphone.GetPosition(null) <= 0) { }
         audioSource.loop = true;
+
         audioSource.Play();
 
         InvokeRepeating(nameof(EstimatePitch), 0f, estimateInterval);
@@ -101,7 +105,7 @@ public class MicPitch : MonoBehaviour
 
     void Update()
     {
-        if (isResizingFinished || sphereTransform == null) return;
+        if (isResizingFinished || sphereTransform == null || !allowResizing) return;
 
         if (latestAmplitude < minAmplitudeForDetection)
         {
