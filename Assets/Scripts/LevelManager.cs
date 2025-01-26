@@ -22,6 +22,9 @@ public class LevelManager : MonoBehaviour
     [Header("Character Animation")]
     public Animator characterAnimator; // Animator for the character
 
+    [Header("Chamaco Animation")]
+    public Animator chamacoAnimator; // Animator for the character
+
     private Target currentTarget;
     public bool levelActive = false;
     private int totalScore = 0; // Total score tracker
@@ -46,6 +49,9 @@ public class LevelManager : MonoBehaviour
     /// </summary>
     public void StartNewLevel()
     {
+
+        chamacoAnimator.SetTrigger("Idle");
+
         if (targets.Count == 0)
         {
             Debug.LogError("No targets available!");
@@ -62,7 +68,7 @@ public class LevelManager : MonoBehaviour
         currentTarget = targets[Random.Range(0, targets.Count)];
         currentTarget.gameObject.SetActive(true);
 
-        Debug.Log($"New Target selected: {currentTarget.name} with scale value: {currentTarget.TargetScale}");
+        Debug.Log($"New Target selected: {currentTarget.name} with scale index: {currentTarget.scaleIndex}");
 
 
 
@@ -201,46 +207,49 @@ public class LevelManager : MonoBehaviour
             return;
         }
 
-        float bubbleScale = micPitchScript.currentSphereScale;
-        float targetScale = currentTarget.TargetScale;
+        int bubbleScaleIndex = micPitchScript.currentScaleIndex;
+        int targetScaleIndex = currentTarget.scaleIndex;
 
-        Debug.Log($"Bubble Scale: {bubbleScale:F2}, Target Scale: {targetScale:F2}");
+        Debug.Log($"Bubble Scale Index: {bubbleScaleIndex}, Target Scale Index: {targetScaleIndex}");
 
         int score = 0;
-        if (Mathf.Approximately(bubbleScale, targetScale))
+        if (bubbleScaleIndex == targetScaleIndex)
         {
             score = 100;
+
+            chamacoAnimator.SetTrigger("MuyBien");
         }
-        else if (bubbleScale < targetScale)
+        else if (bubbleScaleIndex < targetScaleIndex)
         {
-            score = Mathf.Max(0, Mathf.RoundToInt(100 - Mathf.Abs(targetScale - bubbleScale*10)));
+            // Bubble is smaller than the target
+            int difference = targetScaleIndex - bubbleScaleIndex;
+            score = Mathf.Max(0, 100 - (difference * 10)); // Ensure the score doesn't go below 0
+            chamacoAnimator.SetTrigger("TaBien");
+
         }
-        else if(bubbleScale > targetScale)
+        else
         {
-            Debug.Log("Here");
-            // Play error sound
+            Debug.Log("Incorrect scale.");
             if (errorSound != null && audioSource != null)
             {
                 audioSource.PlayOneShot(errorSound);
             }
 
+            chamacoAnimator.SetTrigger("Mal");
         }
 
         totalScore += score;
         Debug.Log($"Score for this level: {score}, Total Score: {totalScore}");
 
-        // Play success sound if the user scores
         if (score > 0 && successSound != null && audioSource != null)
         {
             audioSource.PlayOneShot(successSound);
         }
-
         UpdateScoreText();
-
         currentTarget.gameObject.SetActive(false);
-
         Invoke(nameof(StartNewLevel), 2f);
     }
+
 
     private void UpdateScoreText()
     {

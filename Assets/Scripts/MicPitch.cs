@@ -27,30 +27,19 @@ public class MicPitch : MonoBehaviour
         public float minFreq;
         public float maxFreq;
         public float scale;
+        public int scaleIndex;
     }
 
     [Header("Discrete Pitch Ranges")]
     [Tooltip("List of discrete pitch ranges. If the pitch stays in one range enough, we smooth to that range's scale.")]
     public PitchRange[] pitchRanges = new PitchRange[]
     {
-        new PitchRange { minFreq =  80f, maxFreq = 110f, scale =  1.5f },
-        new PitchRange { minFreq = 110f, maxFreq = 130f, scale =  2f },
-        new PitchRange { minFreq = 130f, maxFreq = 150f, scale =  3f },
-        new PitchRange { minFreq = 150f, maxFreq = 170f, scale =  4f },
-        new PitchRange { minFreq = 170f, maxFreq = 190f, scale =  5f },
-        new PitchRange { minFreq = 190f, maxFreq = 210f, scale =  6f },
-        new PitchRange { minFreq = 210f, maxFreq = 230f, scale =  7f },
-        new PitchRange { minFreq = 230f, maxFreq = 250f, scale =  8f },
-        new PitchRange { minFreq = 250f, maxFreq = 270f, scale =  9f },
-        new PitchRange { minFreq = 270f, maxFreq = 300f, scale = 10f },
-        new PitchRange { minFreq = 300f, maxFreq = 330f, scale = 11f },
-        new PitchRange { minFreq = 330f, maxFreq = 360f, scale = 12f },
-        new PitchRange { minFreq = 360f, maxFreq = 390f, scale = 13f },
-        new PitchRange { minFreq = 390f, maxFreq = 420f, scale = 14f },
-        new PitchRange { minFreq = 420f, maxFreq = 450f, scale = 15f },
-        new PitchRange { minFreq = 450f, maxFreq = 500f, scale = 16f },
-        new PitchRange { minFreq = 500f, maxFreq = 550f, scale = 17f },
-        new PitchRange { minFreq = 550f, maxFreq = 600f, scale = 18f },
+        new PitchRange { minFreq =  80f, maxFreq = 110f, scale =  1.5f, scaleIndex = 1 },
+        new PitchRange { minFreq = 110f, maxFreq = 130f, scale =  2.5f, scaleIndex = 2 },
+        new PitchRange { minFreq = 130f, maxFreq = 150f, scale =  3.5f, scaleIndex = 3 },
+        new PitchRange { minFreq = 150f, maxFreq = 190f, scale =  6f, scaleIndex = 4 },
+        new PitchRange { minFreq = 190f, maxFreq = 210f, scale =  10f, scaleIndex = 5 },
+        new PitchRange { minFreq = 210f, maxFreq = 300f, scale =  12f, scaleIndex = 6 }
     };
 
     [Header("Consecutive Detections")]
@@ -70,6 +59,7 @@ public class MicPitch : MonoBehaviour
 
     private bool isResizingFinished = false;
     public float currentSphereScale = 1f;
+    public int currentScaleIndex = -1;
     private float targetSphereScale = 1f;
     private int currentRangeIndex = -1;
     private int consecutiveCount = 0;
@@ -196,9 +186,13 @@ public class MicPitch : MonoBehaviour
         if (consecutiveCount >= consecutiveThreshold)
         {
             float newScale = pitchRanges[currentRangeIndex].scale;
+            int newScaleIndex = pitchRanges[currentRangeIndex].scaleIndex;
+
             if (!Mathf.Approximately(targetSphereScale, newScale))
             {
                 targetSphereScale = newScale;
+                currentScaleIndex = newScaleIndex;
+                Debug.Log(currentScaleIndex);
             }
         }
     }
