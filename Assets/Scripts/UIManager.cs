@@ -66,4 +66,14 @@ public class UIManager : MonoBehaviour
     {
         EditorSceneManager.LoadScene(EditorSceneManager.GetActiveScene().name);
     }
+
+    public void PlaySFX(string name)
+    {
+        SoundManager.instance.PlaySFX(name);
+    }
+
+    public void PlayMusic(string name)
+    {
+        SoundManager.instance.PlayMusic(name);
+    }
 }

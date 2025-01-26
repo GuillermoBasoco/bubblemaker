@@ -19,7 +19,6 @@ public class SoundManager : MonoBehaviour
         }
         else
         {
-            instance.BGMusic = BGMusic;
             Destroy(gameObject);
             return;
         }        

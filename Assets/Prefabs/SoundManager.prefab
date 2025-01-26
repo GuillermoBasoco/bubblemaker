@@ -46,9 +46,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f35120e100b39c343b845cc638883cf7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  BGMusic: 0
-  music: []
-  SFXs: []
+  BGMusic: Menu
+  music:
+  - name: Gameplay
+    clip: {fileID: 8300000, guid: 2b7338fc3231a744991ecda2ee018d72, type: 3}
+  - name: Menu
+    clip: {fileID: 8300000, guid: e273076a8fe542e4cb8153670e71e4cf, type: 3}
+  SFXs:
+  - name: Respira
+    clip: {fileID: 8300000, guid: 7abdc7d527af4a143adb9d10c7835b3a, type: 3}
+  - name: Perfecto
+    clip: {fileID: 8300000, guid: 345938683f557714aa0e214c091a4b09, type: 3}
+  - name: Fail
+    clip: {fileID: 8300000, guid: 9ac7ae2c665e5ff4e89acc026fb93dd3, type: 3}
+  - name: Sopla
+    clip: {fileID: 8300000, guid: 6c9e15f40e26da743a1da9189b6d8ae6, type: 3}
+  - name: Bien
+    clip: {fileID: 8300000, guid: 5cfde1b27adeb43498effb24d199c439, type: 3}
+  - name: UI
+    clip: {fileID: 8300000, guid: a6872b040f8c6eb4d8621558a0d95a27, type: 3}
   musicSource: {fileID: 6051281726120360800}
   SFXSource: {fileID: 4645778121305601563}
 --- !u!1 &8457649867472465546
@@ -97,7 +113,7 @@ AudioSource:
   m_PlayOnAwake: 1
   m_Volume: 1
   m_Pitch: 1
-  Loop: 0
+  Loop: 1
   Mute: 0
   Spatialize: 0
   SpatializePostEffects: 0
