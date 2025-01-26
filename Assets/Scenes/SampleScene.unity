@@ -510,71 +510,6 @@ RectTransform:
   m_AnchoredPosition: {x: 100.8, y: -101.8}
   m_SizeDelta: {x: 150, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1001 &190235268
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    serializedVersion: 3
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 4272763545137618927, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_Mesh
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalPosition.z
-      value: -13.1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 6283442032984726841, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_Name
-      value: Bubble
-      objectReference: {fileID: 0}
-    - target: {fileID: 6283442032984726841, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-      propertyPath: m_IsActive
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-    m_RemovedGameObjects: []
-    m_AddedGameObjects: []
-    m_AddedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
 --- !u!1 &277071436
 GameObject:
   m_ObjectHideFlags: 0
@@ -849,8 +784,12 @@ MonoBehaviour:
     maxFreq: 600
     scale: 20
   consecutiveThreshold: 4
-  sphereTransform: {fileID: 1229526189}
+  sphereTransform: {fileID: 0}
   scaleLerpSpeed: 5
+  silenceThreshold: 2
+  shrinkSpeed: 0.6
+  explosionEffect: {fileID: 8537024203477548746, guid: 5a950c0bf660643f4b5b0e76c8c45d44, type: 3}
+  levelManager: {fileID: 2095327867}
   currentSphereScale: 1
 --- !u!4 &542410833
 Transform:
@@ -1644,11 +1583,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TargetScale: 4
---- !u!4 &1229526189 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5056685188198590647, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
-  m_PrefabInstance: {fileID: 190235268}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1463862812
 GameObject:
   m_ObjectHideFlags: 0
@@ -2603,6 +2537,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0c28148a436ad46189beb843de83d652, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  bubblePrefab: {fileID: 6283442032984726841, guid: e05eff257cab89e46bb4362782f5293b, type: 3}
   micPitchScript: {fileID: 542410832}
   targets:
   - {fileID: 863293272}
@@ -2615,10 +2550,14 @@ MonoBehaviour:
   - {fileID: 47055618}
   - {fileID: 1463862813}
   levelDuration: 5
+  idleInterval: 2
   countdownImage: {fileID: 120294372}
   scoreText: {fileID: 1799396381}
   timeText: {fileID: 616500595}
   characterAnimator: {fileID: 1510214293}
+  levelActive: 0
+  gameOverText: {fileID: 0}
+  restartButton: {fileID: 0}
 --- !u!4 &2095327868
 Transform:
   m_ObjectHideFlags: 0
@@ -2643,7 +2582,6 @@ SceneRoots:
   - {fileID: 963194228}
   - {fileID: 705507995}
   - {fileID: 542410833}
-  - {fileID: 190235268}
   - {fileID: 1466479734}
   - {fileID: 863293270}
   - {fileID: 1888809923}
@@ -2652,7 +2590,7 @@ SceneRoots:
   - {fileID: 2023025536}
   - {fileID: 1580257052}
   - {fileID: 27066916}
-  - {fileID: 47055622}
   - {fileID: 1463862817}
   - {fileID: 2095327868}
   - {fileID: 1885928841}
+  - {fileID: 47055622}

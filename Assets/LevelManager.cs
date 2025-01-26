@@ -7,9 +7,11 @@ using TMPro; // Import TextMeshPro namespace
 public class LevelManager : MonoBehaviour
 {
     [Header("Settings")]
+    public GameObject bubblePrefab; // Bubble prefab to instantiate
     public MicPitch micPitchScript; // Reference to the Bubble's pitch detection script
     public List<Target> targets; // List of available Targets
     public float levelDuration = 10f; // Duration of the level in seconds
+    public float idleInterval = 0.1f; // Time to stay in the idle state between levels
 
     [Header("UI Settings")]
     public Image countdownImage; // UI Image for the countdown fill
@@ -20,8 +22,12 @@ public class LevelManager : MonoBehaviour
     public Animator characterAnimator; // Animator for the character
 
     private Target currentTarget;
-    private bool levelActive = false;
+    public bool levelActive = false;
     private int totalScore = 0; // Total score tracker
+    private GameObject currentBubble; // Current instantiated Bubble
+
+    public TextMeshProUGUI gameOverText; // TextMeshPro Text for displaying "Game Over"
+    public GameObject restartButton; // Button to restart the game
 
     void Start()
     {
@@ -30,7 +36,7 @@ public class LevelManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Starts a new level by selecting a random target and starting the timer.
+    /// Starts a new level by selecting a random target, instantiating the Bubble, and starting the timer.
     /// </summary>
     public void StartNewLevel()
     {
@@ -64,48 +70,67 @@ public class LevelManager : MonoBehaviour
             timeText.text = $"{levelDuration:F1}s";
         }
 
-        // Trigger inhalation animation
+        // Instantiate the Bubble prefab
+        if (bubblePrefab != null)
+        {
+            if (currentBubble != null)
+            {
+                Destroy(currentBubble); // Remove the previous Bubble
+            }
+
+            // Instantiate the Bubble at position (0, 0, -13.1)
+            Vector3 bubblePosition = new Vector3(0f, 0f, -13.1f);
+            currentBubble = Instantiate(bubblePrefab, bubblePosition, Quaternion.identity);
+            currentBubble.SetActive(false);
+            micPitchScript.sphereTransform = currentBubble.transform;
+        }
+        else
+        {
+            Debug.LogError("Bubble prefab is not assigned!");
+        }
+
+        // Trigger the idle animation before starting the level
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetTrigger("FullAire"); // Play Player_Idle animation
+        }
+
+        // Delay before transitioning to inhalation
+        Invoke(nameof(PlayInhalationAnimation), idleInterval);
+    }
+
+    private void PlayInhalationAnimation()
+    {
         if (characterAnimator != null)
         {
             characterAnimator.SetTrigger("Inhala"); // Play Player_inhalate animation
         }
 
-        // Start the level timer after inhalation animation
-        Invoke(nameof(StartLevelTimer), 1.5f); // Assuming the inhalation animation takes 1.5 seconds
+        Invoke(nameof(StartLevelTimer), 1.0f);
     }
 
-    /// <summary>
-    /// Starts the level timer and the blowing animation.
-    /// </summary>
     private void StartLevelTimer()
     {
-        // Trigger blowing animation
         if (characterAnimator != null)
         {
             characterAnimator.SetTrigger("Sopla"); // Play Player_sopla animation
         }
-
-        // Start the level timer
+        currentBubble.SetActive(true);
         levelActive = true;
         StartCoroutine(LevelTimer());
     }
 
-    /// <summary>
-    /// Timer coroutine for the level duration.
-    /// </summary>
     private IEnumerator LevelTimer()
     {
         float timeRemaining = levelDuration;
 
         while (timeRemaining > 0)
         {
-            // Update the countdown fill
             if (countdownImage != null)
             {
                 countdownImage.fillAmount = timeRemaining / levelDuration;
             }
 
-            // Update the time display
             if (timeText != null)
             {
                 timeText.text = $"{timeRemaining:F1}s";
@@ -115,28 +140,21 @@ public class LevelManager : MonoBehaviour
             yield return null;
         }
 
-        // Final time update
         if (timeText != null)
         {
             timeText.text = "0.0s";
         }
 
-        // End the level
         levelActive = false;
 
-        // Trigger "no air" animation
         if (characterAnimator != null)
         {
             characterAnimator.SetTrigger("SinAire"); // Play Player_sinaire animation
         }
 
-        // Delay returning to idle
-        Invoke(nameof(TransitionToIdle), 2.5f); // Assuming the "no air" animation takes 1.5 seconds
+        Invoke(nameof(TransitionToIdle), 1.0f); // Adjust timing as needed
     }
 
-    /// <summary>
-    /// Transitions the character back to the idle animation.
-    /// </summary>
     private void TransitionToIdle()
     {
         if (characterAnimator != null)
@@ -144,12 +162,9 @@ public class LevelManager : MonoBehaviour
             characterAnimator.SetTrigger("FullAire"); // Play Player_Idle animation
         }
 
-        CheckResult();
+        Invoke(nameof(CheckResult), 0.5f);
     }
 
-    /// <summary>
-    /// Compares the Bubble's scale to the Target's value at the end of the timer and calculates the score.
-    /// </summary>
     private void CheckResult()
     {
         if (micPitchScript == null || currentTarget == null)
@@ -158,42 +173,31 @@ public class LevelManager : MonoBehaviour
             return;
         }
 
-        // Use currentSphereScale from the Bubble script
         float bubbleScale = micPitchScript.currentSphereScale;
         float targetScale = currentTarget.TargetScale;
 
         Debug.Log($"Bubble Scale: {bubbleScale:F2}, Target Scale: {targetScale:F2}");
 
-        // Calculate the score
         int score = 0;
         if (Mathf.Approximately(bubbleScale, targetScale))
         {
-            // Perfect match
             score = 100;
         }
         else if (bubbleScale < targetScale)
         {
-            // Partial score for close match
             score = Mathf.Max(0, Mathf.RoundToInt(100 - Mathf.Abs(targetScale - bubbleScale)));
         }
 
-        // Update total score
         totalScore += score;
         Debug.Log($"Score for this level: {score}, Total Score: {totalScore}");
 
-        // Update score UI
         UpdateScoreText();
 
-        // Deactivate the current target
         currentTarget.gameObject.SetActive(false);
 
-        // Optionally: Start a new level after a short delay
         Invoke(nameof(StartNewLevel), 2f);
     }
 
-    /// <summary>
-    /// Updates the score text on the screen.
-    /// </summary>
     private void UpdateScoreText()
     {
         if (scoreText != null)
@@ -203,6 +207,30 @@ public class LevelManager : MonoBehaviour
         else
         {
             Debug.LogWarning("Score Text is not assigned!");
+        }
+    }
+
+    public void GameOver()
+    {
+        Debug.Log("Game Over!");
+        levelActive = false;
+        CancelInvoke();
+        StopAllCoroutines();
+
+        if (gameOverText != null)
+        {
+            gameOverText.text = "Game Over!";
+            gameOverText.gameObject.SetActive(true);
+        }
+
+        if (restartButton != null)
+        {
+            restartButton.SetActive(true);
+        }
+
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetTrigger("FullAire");
         }
     }
 }

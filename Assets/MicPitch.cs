@@ -33,7 +33,6 @@ public class MicPitch : MonoBehaviour
     [Tooltip("List of discrete pitch ranges. If the pitch stays in one range enough, we smooth to that range's scale.")]
     public PitchRange[] pitchRanges = new PitchRange[]
     {
-        // 18 intervals from 80–600 Hz (~30 Hz each)
         new PitchRange { minFreq =  80f, maxFreq = 110f, scale =  1.5f },
         new PitchRange { minFreq = 110f, maxFreq = 130f, scale =  2f },
         new PitchRange { minFreq = 130f, maxFreq = 150f, scale =  3f },
@@ -63,49 +62,37 @@ public class MicPitch : MonoBehaviour
     [Tooltip("How quickly we lerp to the new scale once triggered.")]
     public float scaleLerpSpeed = 8f;
 
-    // Once a clap is detected, resizing stops
-    private bool isResizingFinished = false;
+    [Header("Silence Settings")]
+    public float silenceThreshold = 2f; // Time before shrinking starts
+    public float shrinkSpeed = 0.6f; // Speed of shrinking
+    public GameObject explosionEffect; // Explosion prefab
+    public LevelManager levelManager; // Reference to the LevelManager
 
-    // We'll track the "current" displayed scale (smooth), and the "target" scale
+    private bool isResizingFinished = false;
     public float currentSphereScale = 1f;
     private float targetSphereScale = 1f;
-
-    // We'll track how many consecutive times we've detected the same pitch range
     private int currentRangeIndex = -1;
     private int consecutiveCount = 0;
-
-    // Clap amplitude
     private float latestAmplitude = 0f;
+    private float silenceTimer = 0f; // Timer to track silence
 
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
         pitchEstimator = GetComponent<AudioPitchEstimator>();
 
-        // Check for mic
         if (Microphone.devices.Length == 0)
         {
             Debug.LogError("No microphone detected!");
             return;
         }
 
-        // Start mic
         audioSource.clip = Microphone.Start(Microphone.devices[0], true, 10, 44100);
         while (Microphone.GetPosition(null) <= 0) { }
-
-        // Mute if you don't want to hear yourself (optional):
-        // audioSource.mute = true;
-
         audioSource.loop = true;
         audioSource.Play();
 
-        // Start pitch detection
         InvokeRepeating(nameof(EstimatePitch), 0f, estimateInterval);
-
-        // Initialize sphere scale
-        currentSphereScale = 1f;
-        targetSphereScale = currentSphereScale;
-
         if (sphereTransform != null)
         {
             sphereTransform.localScale = Vector3.one * currentSphereScale;
@@ -114,58 +101,72 @@ public class MicPitch : MonoBehaviour
 
     void Update()
     {
-        // If user clapped, freeze resizing
-        if (isResizingFinished) return;
+        if (isResizingFinished || sphereTransform == null) return;
 
-        // Clap check
-        if (latestAmplitude > clapAmplitudeThreshold)
+        if (latestAmplitude < minAmplitudeForDetection)
         {
-            Debug.Log($"Clap detected! amplitude: {latestAmplitude:F3} > threshold: {clapAmplitudeThreshold}");
-            isResizingFinished = true;
-            return;
+            silenceTimer += Time.deltaTime;
+            if (silenceTimer >= silenceThreshold && levelManager.levelActive)
+            {
+                ShrinkBubble();
+                return;
+            }
+        }
+        else
+        {
+            silenceTimer = 0f; // Reset the timer
         }
 
-        // Smoothly lerp from currentSphereScale to targetSphereScale
-        currentSphereScale = Mathf.Lerp(
-            currentSphereScale,
-            targetSphereScale,
-            scaleLerpSpeed * Time.deltaTime
-        );
-
-        // Apply scale to the sphere
+        currentSphereScale = Mathf.Lerp(currentSphereScale, targetSphereScale, scaleLerpSpeed * Time.deltaTime);
         if (sphereTransform != null)
         {
             sphereTransform.localScale = Vector3.one * currentSphereScale;
         }
     }
 
-    /// <summary>
-    /// Detects pitch, finds range, requires consecutive detections, sets 'targetSphereScale' if threshold met.
-    /// </summary>
+    void ShrinkBubble()
+    {
+        if (sphereTransform == null) return;
+
+        currentSphereScale -= shrinkSpeed * Time.deltaTime;
+        if (sphereTransform != null)
+        {
+            sphereTransform.localScale = Vector3.one * Mathf.Max(currentSphereScale, 0f);
+        }
+
+        if (currentSphereScale <= 0f)
+        {
+            ExplodeBubble();
+        }
+    }
+
+    void ExplodeBubble()
+    {
+        if (sphereTransform == null) return;
+
+        if (explosionEffect != null)
+        {
+            Instantiate(explosionEffect, sphereTransform.position, Quaternion.identity);
+        }
+
+        Debug.Log("Bubble exploded! You lose.");
+        if (levelManager != null)
+        {
+            levelManager.GameOver();
+        }
+
+        Destroy(sphereTransform.gameObject);
+        sphereTransform = null;
+    }
+
     void EstimatePitch()
     {
-        // If we've stopped resizing, skip
-        if (isResizingFinished) return;
+        if (isResizingFinished || sphereTransform == null) return;
+        if (latestAmplitude < minAmplitudeForDetection) return;
 
-        // 1) Check amplitude before detection
-        if (latestAmplitude < minAmplitudeForDetection)
-        {
-            // Not loud enough, skip pitch detection
-            // Debug.Log("Amplitude too low, skipping pitch detection.");
-            return;
-        }
-
-        if (audioSource.clip == null) return;
-
-        // 2) Try to estimate pitch
         float newPitch = pitchEstimator.Estimate(audioSource);
-        if (float.IsNaN(newPitch))
-        {
-            // No pitch detected, ignore
-            return;
-        }
+        if (float.IsNaN(newPitch)) return;
 
-        // 3) Determine which range the pitch belongs to
         int foundIndex = -1;
         for (int i = 0; i < pitchRanges.Length; i++)
         {
@@ -176,13 +177,8 @@ public class MicPitch : MonoBehaviour
             }
         }
 
-        // If out of all defined ranges, ignore
-        if (foundIndex < 0)
-        {
-            return;
-        }
+        if (foundIndex < 0) return;
 
-        // 4) Check consecutive detection
         if (foundIndex == currentRangeIndex)
         {
             consecutiveCount++;
@@ -193,33 +189,23 @@ public class MicPitch : MonoBehaviour
             consecutiveCount = 1;
         }
 
-        // 5) Once threshold is reached, update target scale
         if (consecutiveCount >= consecutiveThreshold)
         {
             float newScale = pitchRanges[currentRangeIndex].scale;
             if (!Mathf.Approximately(targetSphereScale, newScale))
             {
-                Debug.Log($"==> Target scale set to {newScale} (range index {currentRangeIndex}, freq: {newPitch:F2} Hz)");
                 targetSphereScale = newScale;
             }
         }
     }
 
-    /// <summary>
-    /// Captures the peak amplitude in OnAudioFilterRead for clap detection and amplitude gating.
-    /// </summary>
     void OnAudioFilterRead(float[] data, int channels)
     {
         float peak = 0f;
         for (int i = 0; i < data.Length; i += channels)
         {
-            float absSample = Mathf.Abs(data[i]);
-            if (absSample > peak)
-            {
-                peak = absSample;
-            }
+            peak = Mathf.Max(peak, Mathf.Abs(data[i]));
         }
-
         latestAmplitude = peak;
     }
 }
