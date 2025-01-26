@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using TMPro; // Import TextMeshPro namespace
 
@@ -285,5 +286,10 @@ public class LevelManager : MonoBehaviour
         {
             characterAnimator.SetTrigger("FullAire");
         }
+    }
+
+    public void Exit()
+    {
+        SceneManager.LoadScene(0);
     }
 }
