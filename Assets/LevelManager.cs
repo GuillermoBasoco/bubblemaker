@@ -16,6 +16,9 @@ public class LevelManager : MonoBehaviour
     public TextMeshProUGUI scoreText; // TextMeshPro Text for displaying the score
     public TextMeshProUGUI timeText; // TextMeshPro Text for displaying the remaining time
 
+    [Header("Character Animation")]
+    public Animator characterAnimator; // Animator for the character
+
     private Target currentTarget;
     private bool levelActive = false;
     private int totalScore = 0; // Total score tracker
@@ -61,6 +64,27 @@ public class LevelManager : MonoBehaviour
             timeText.text = $"{levelDuration:F1}s";
         }
 
+        // Trigger inhalation animation
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetTrigger("Inhala"); // Play Player_inhalate animation
+        }
+
+        // Start the level timer after inhalation animation
+        Invoke(nameof(StartLevelTimer), 1.5f); // Assuming the inhalation animation takes 1.5 seconds
+    }
+
+    /// <summary>
+    /// Starts the level timer and the blowing animation.
+    /// </summary>
+    private void StartLevelTimer()
+    {
+        // Trigger blowing animation
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetTrigger("Sopla"); // Play Player_sopla animation
+        }
+
         // Start the level timer
         levelActive = true;
         StartCoroutine(LevelTimer());
@@ -97,8 +121,29 @@ public class LevelManager : MonoBehaviour
             timeText.text = "0.0s";
         }
 
-        // Level ends
+        // End the level
         levelActive = false;
+
+        // Trigger "no air" animation
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetTrigger("SinAire"); // Play Player_sinaire animation
+        }
+
+        // Delay returning to idle
+        Invoke(nameof(TransitionToIdle), 2.5f); // Assuming the "no air" animation takes 1.5 seconds
+    }
+
+    /// <summary>
+    /// Transitions the character back to the idle animation.
+    /// </summary>
+    private void TransitionToIdle()
+    {
+        if (characterAnimator != null)
+        {
+            characterAnimator.SetTrigger("FullAire"); // Play Player_Idle animation
+        }
+
         CheckResult();
     }
 

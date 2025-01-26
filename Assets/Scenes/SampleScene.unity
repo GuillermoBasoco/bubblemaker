@@ -2005,6 +2005,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   TargetScale: 3
+--- !u!95 &1510214293 stripped
+Animator:
+  m_CorrespondingSourceObject: {fileID: 4337364543147245736, guid: 92669a6276c820341bc1fc3d1703bea6, type: 3}
+  m_PrefabInstance: {fileID: 1885928841}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1580257048
 GameObject:
   m_ObjectHideFlags: 0
@@ -2609,10 +2614,11 @@ MonoBehaviour:
   - {fileID: 27066912}
   - {fileID: 47055618}
   - {fileID: 1463862813}
-  levelDuration: 4
+  levelDuration: 5
   countdownImage: {fileID: 120294372}
   scoreText: {fileID: 1799396381}
   timeText: {fileID: 616500595}
+  characterAnimator: {fileID: 1510214293}
 --- !u!4 &2095327868
 Transform:
   m_ObjectHideFlags: 0
