@@ -29,6 +29,10 @@ public class LevelManager : MonoBehaviour
     public TextMeshProUGUI gameOverText; // TextMeshPro Text for displaying "Game Over"
     public GameObject restartButton; // Button to restart the game
 
+    public AudioClip successSound; // Sound to play when the user scores
+    public AudioClip errorSound; // Sound to play when error
+    public AudioSource audioSource; // AudioSource to play sounds
+
     void Start()
     {
         UpdateScoreText(); // Initialize score text
@@ -185,11 +189,27 @@ public class LevelManager : MonoBehaviour
         }
         else if (bubbleScale < targetScale)
         {
-            score = Mathf.Max(0, Mathf.RoundToInt(100 - Mathf.Abs(targetScale - bubbleScale)));
+            score = Mathf.Max(0, Mathf.RoundToInt(100 - Mathf.Abs(targetScale - bubbleScale*10)));
+        }
+        else if(bubbleScale > targetScale)
+        {
+            Debug.Log("Here");
+            // Play error sound
+            if (errorSound != null && audioSource != null)
+            {
+                audioSource.PlayOneShot(errorSound);
+            }
+
         }
 
         totalScore += score;
         Debug.Log($"Score for this level: {score}, Total Score: {totalScore}");
+
+        // Play success sound if the user scores
+        if (score > 0 && successSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(successSound);
+        }
 
         UpdateScoreText();
 
