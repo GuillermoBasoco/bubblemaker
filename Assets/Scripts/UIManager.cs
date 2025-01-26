@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEditor.SceneManagement;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour
@@ -40,7 +40,7 @@ public class UIManager : MonoBehaviour
     //Open level
     public void OpenLevel(string levelName)
     {
-        EditorSceneManager.LoadScene(levelName);
+        SceneManager.LoadScene(levelName);
     }
 
     //Closes the app
@@ -80,7 +80,7 @@ public class UIManager : MonoBehaviour
     //Retry current level
     public void Retry()
     {
-        EditorSceneManager.LoadScene(EditorSceneManager.GetActiveScene().name);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 
     public void PlaySFX(string name)
