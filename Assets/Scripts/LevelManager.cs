@@ -256,7 +256,7 @@ public class LevelManager : MonoBehaviour
     {
         if (scoreText != null)
         {
-            scoreText.text = $"Score: {totalScore}";
+            scoreText.text = $"{totalScore}";
         }
         else
         {
