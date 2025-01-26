@@ -7,6 +7,7 @@ public class SoundManager : MonoBehaviour
     public string BGMusic;
     public Sound[] music, SFXs;
     public AudioSource musicSource, SFXSource;
+    public float musicV = 1, sfxV = 1;
     private float _musicVolume = 1, _SFXVolume = 1;
     private bool _musicMute = false, _SFXMute = false;
 
@@ -86,6 +87,7 @@ public class SoundManager : MonoBehaviour
     //Changes the volume of the music
     public void MusicVolume(float volume)
     {
+        musicV = volume;
         musicSource.volume = volume * volume;
         _musicVolume = musicSource.volume;
     }
@@ -93,6 +95,7 @@ public class SoundManager : MonoBehaviour
     //Changes the volume of the SFX
     public void SFXVolume(float volume)
     {
+        sfxV = volume;
         SFXSource.volume = volume * volume;
         _SFXVolume = SFXSource.volume;
     }
