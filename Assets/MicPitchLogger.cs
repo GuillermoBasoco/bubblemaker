@@ -2,7 +2,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(AudioSource))]
 [RequireComponent(typeof(AudioPitchEstimator))]
-public class RangeBasedMicPitchWide18 : MonoBehaviour
+public class MicPitch : MonoBehaviour
 {
     private AudioSource audioSource;
     private AudioPitchEstimator pitchEstimator;
@@ -34,7 +34,7 @@ public class RangeBasedMicPitchWide18 : MonoBehaviour
     public PitchRange[] pitchRanges = new PitchRange[]
     {
         // 18 intervals from 80–600 Hz (~30 Hz each)
-        new PitchRange { minFreq =  80f, maxFreq = 110f, scale =  1f },
+        new PitchRange { minFreq =  80f, maxFreq = 110f, scale =  1.5f },
         new PitchRange { minFreq = 110f, maxFreq = 130f, scale =  2f },
         new PitchRange { minFreq = 130f, maxFreq = 150f, scale =  3f },
         new PitchRange { minFreq = 150f, maxFreq = 170f, scale =  4f },
@@ -67,7 +67,7 @@ public class RangeBasedMicPitchWide18 : MonoBehaviour
     private bool isResizingFinished = false;
 
     // We'll track the "current" displayed scale (smooth), and the "target" scale
-    private float currentSphereScale = 1f;
+    public float currentSphereScale = 1f;
     private float targetSphereScale = 1f;
 
     // We'll track how many consecutive times we've detected the same pitch range
