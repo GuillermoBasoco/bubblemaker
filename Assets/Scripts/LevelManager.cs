@@ -15,6 +15,7 @@ public class LevelManager : MonoBehaviour
 
     [Header("UI Settings")]
     public Image countdownImage; // UI Image for the countdown fill
+    public TextMeshProUGUI countdownText;
     public TextMeshProUGUI scoreText; // TextMeshPro Text for displaying the score
     public TextMeshProUGUI timeText; // TextMeshPro Text for displaying the remaining time
 
@@ -32,6 +33,7 @@ public class LevelManager : MonoBehaviour
     public AudioClip successSound; // Sound to play when the user scores
     public AudioClip errorSound; // Sound to play when error
     public AudioSource audioSource; // AudioSource to play sounds
+    private bool resultChecked = false;
 
     void Start()
     {
@@ -61,6 +63,8 @@ public class LevelManager : MonoBehaviour
         currentTarget.gameObject.SetActive(true);
 
         Debug.Log($"New Target selected: {currentTarget.name} with scale value: {currentTarget.TargetScale}");
+
+
 
         // Reset the countdown fill
         if (countdownImage != null)
@@ -99,8 +103,26 @@ public class LevelManager : MonoBehaviour
             characterAnimator.SetTrigger("FullAire"); // Play Player_Idle animation
         }
 
+        StartCoroutine(CountdownToStart());
+
         // Delay before transitioning to inhalation
         Invoke(nameof(PlayInhalationAnimation), idleInterval);
+    }
+
+    private IEnumerator CountdownToStart()
+    {
+        if (countdownText != null)
+        {
+            countdownText.gameObject.SetActive(true); // Show the countdown text
+            for (int i = 3; i > 0; i--)
+            {
+                countdownText.text = i.ToString();
+                yield return new WaitForSeconds(1f); // Wait for 1 second
+            }
+
+            countdownText.gameObject.SetActive(false); // Hide the countdown text
+        }
+
     }
 
     private void PlayInhalationAnimation()
@@ -121,6 +143,7 @@ public class LevelManager : MonoBehaviour
         }
         currentBubble.SetActive(true);
         levelActive = true;
+        micPitchScript.allowResizing = true; // Allow resizing
         StartCoroutine(LevelTimer());
     }
 
@@ -156,6 +179,7 @@ public class LevelManager : MonoBehaviour
             characterAnimator.SetTrigger("SinAire"); // Play Player_sinaire animation
         }
 
+        micPitchScript.allowResizing = false; // Disable resizing
         Invoke(nameof(TransitionToIdle), 1.0f); // Adjust timing as needed
     }
 
