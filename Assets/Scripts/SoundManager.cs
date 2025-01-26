@@ -7,6 +7,8 @@ public class SoundManager : MonoBehaviour
     public string BGMusic;
     public Sound[] music, SFXs;
     public AudioSource musicSource, SFXSource;
+    private float _musicVolume = 1, _SFXVolume = 1;
+    private bool _musicMute = false, _SFXMute = false;
 
     void Awake()
     {
@@ -26,6 +28,11 @@ public class SoundManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        musicSource.volume = _musicVolume;
+        SFXSource.volume = _SFXVolume;
+        musicSource.mute = _musicMute;
+        SFXSource.mute = _SFXMute;
+
         PlayMusic(BGMusic); 
     }
 
@@ -65,6 +72,8 @@ public class SoundManager : MonoBehaviour
     public void ToggleMusic()
     {
         musicSource.mute = !musicSource.mute;
+        instance.PlaySFX("UI");
+        _musicMute = musicSource.mute;
     }
 
     //Mutes and unmutes the sfx source
@@ -72,17 +81,20 @@ public class SoundManager : MonoBehaviour
     {
         SFXSource.mute = !SFXSource.mute;
         instance.PlaySFX("UI");
+        _SFXMute = SFXSource.mute;
     }
 
     //Changes the volume of the music
     public void MusicVolume(float volume)
     {
         musicSource.volume = volume * volume;
+        _musicVolume = musicSource.volume;
     }
 
     //Changes the volume of the SFX
     public void SFXVolume(float volume)
     {
         SFXSource.volume = volume * volume;
+        _SFXVolume = SFXSource.volume;
     }
 }
