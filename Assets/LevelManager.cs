@@ -14,6 +14,7 @@ public class LevelManager : MonoBehaviour
     [Header("UI Settings")]
     public Image countdownImage; // UI Image for the countdown fill
     public TextMeshProUGUI scoreText; // TextMeshPro Text for displaying the score
+    public TextMeshProUGUI timeText; // TextMeshPro Text for displaying the remaining time
 
     private Target currentTarget;
     private bool levelActive = false;
@@ -54,6 +55,12 @@ public class LevelManager : MonoBehaviour
             countdownImage.fillAmount = 1f; // Full circle at the start
         }
 
+        // Reset time display
+        if (timeText != null)
+        {
+            timeText.text = $"{levelDuration:F1}s";
+        }
+
         // Start the level timer
         levelActive = true;
         StartCoroutine(LevelTimer());
@@ -74,8 +81,20 @@ public class LevelManager : MonoBehaviour
                 countdownImage.fillAmount = timeRemaining / levelDuration;
             }
 
+            // Update the time display
+            if (timeText != null)
+            {
+                timeText.text = $"{timeRemaining:F1}s";
+            }
+
             timeRemaining -= Time.deltaTime;
             yield return null;
+        }
+
+        // Final time update
+        if (timeText != null)
+        {
+            timeText.text = "0.0s";
         }
 
         // Level ends
